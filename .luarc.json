@@ -1,0 +1,5 @@
+{
+  "diagnostics.globals": ["LazyVim", "Snacks", "vim"],
+  "runtime.version": "LuaJIT",
+  "workspace.library": ["$VIMRUNTIME"]
+}
