@@ -8,14 +8,23 @@ function M.setup()
   local f = ls.function_node
 
   -- Cargar snippets predefinidos de friendly-snippets
-  require("luasnip.loaders.from_vscode").lazy_load()
+  pcall(function()
+    require("luasnip.loaders.from_vscode").lazy_load()
+  end)
 
-  -- Función auxiliar para snake_case
-  local function snake_case(args)
-    local text = args[1][1] or ""
-    text = string.lower(text)
-    return (string.gsub(text, " ", "_"))
+  -- Función auxiliar segura para convertir a minúsculas
+  local function safe_lower(args)
+    local text = (args[1] and args[1][1]) or ""
+    return string.lower(text)
   end
+
+  -- Función auxiliar segura para snake_case
+  local function snake_case(args)
+    local text = (args[1] and args[1][1]) or ""
+    text = string.lower(text)
+    return (string.gsub(text, "%s+", "_"))
+  end
+
   -- ==========================================
   -- SNIPPETS PARA HANDLEBARS
   -- ==========================================
@@ -36,9 +45,7 @@ function M.setup()
       t('" class="form-control" name="'),
       i(3, "nombre"),
       t('" id="'),
-      f(function(args)
-        return args[1][1]:lower()
-      end, { 3 }),
+      f(safe_lower, { 3 }),
       t({ '" placeholder="Ingrese ' }),
       i(4, "datos"),
       t({ '">', "</div>" }),
@@ -103,7 +110,6 @@ function M.setup()
   -- SNIPPETS PARA GO (Con Fiber y GORM)
   -- ==========================================
   ls.add_snippets("go", {
-    -- Fiber App Router Básica
     s("fibapp", {
       t({ "app := fiber.New()", "", 'app.Get("/", func(c *fiber.Ctx) error {', '  return c.SendString("' }),
       i(1, "¡Hola Fiber!"),
@@ -111,7 +117,6 @@ function M.setup()
       i(0),
     }),
 
-    -- Handler / Controlador de Fiber
     s("fibhandler", {
       t("func "),
       i(1, "NombreHandler"),
@@ -124,7 +129,6 @@ function M.setup()
       t({ "", "}" }),
     }),
 
-    -- Modelo GORM Completo
     s("gormmod", {
       t("type "),
       i(1, "NombreModelo"),
@@ -135,15 +139,12 @@ function M.setup()
       t(" "),
       i(3, "string"),
       t(' `json:"'),
-      f(function(args)
-        return args[1][1]:lower()
-      end, { 2 }),
+      f(safe_lower, { 2 }),
       t('" gorm:"type:varchar(100);not null"`'),
       t({ "", "}" }),
       i(0),
     }),
 
-    -- Conexión Estándar GORM + Postgres
     s("gormcon", {
       t({ 'dsn := "host=localhost user=postgres password=secret dbname=' }),
       i(1, "midb"),
@@ -157,7 +158,6 @@ function M.setup()
       i(0),
     }),
 
-    -- Inyección / Formulario Fiber
     s("fibbody", {
       t("req := new("),
       i(1, "StructNombre"),
@@ -167,6 +167,7 @@ function M.setup()
       t({ "", "}" }),
       i(0),
     }),
+
     s("fdb", {
       i(1, "Nombre"),
       t(" "),
@@ -211,9 +212,7 @@ function M.setup()
       t(" "),
       i(2, "string"),
       t(' `json:"'),
-      f(function(args)
-        return string.lower(args[1][1])
-      end, { 1 }),
+      f(safe_lower, { 1 }),
       t('"`'),
       i(0),
     }),
@@ -246,13 +245,9 @@ function M.setup()
       t(" "),
       i(2, "string"),
       t(' `json:"'),
-      f(function(args)
-        return args[1][1]:lower()
-      end, { 1 }),
+      f(safe_lower, { 1 }),
       t('" form:"'),
-      f(function(args)
-        return args[1][1]:lower()
-      end, { 1 }),
+      f(safe_lower, { 1 }),
       t('"`'),
       i(0),
     }),
@@ -267,9 +262,7 @@ function M.setup()
       t(" "),
       i(3, "string"),
       t(' `json:"'),
-      f(function(args)
-        return args[1][1]:lower()
-      end, { 2 }),
+      f(safe_lower, { 2 }),
       t('"`'),
       t({ "", "}" }),
     }),
@@ -323,92 +316,92 @@ function M.setup()
       i(0),
       t({ "", "}" }),
     }),
+
+    s("ctx", {
+      t("ctx, cancel := context.WithTimeout(context.Background(), "),
+      i(1, "5"),
+      t("*time.Second)"),
+      t({ "", "defer cancel()" }),
+      i(0),
+    }),
   })
-    -- ==========================================
-    -- SNIPPETS PARA JAVASCRIPT
-    -- ==========================================
-    ls.add_snippets("javascript", {
-      s("exget", {
-        t("router.get('/"),
-        i(1, "path"),
-        t("', (req, res) => {"),
-        t({ "", "  " }),
-        i(0),
-        t({ "", "});" }),
-      }),
 
-      s("clg", {
-        t("console.log('--- "),
-        i(1, "DEBUG"),
-        t(" ---');"),
-        t({ "", "console.log(" }),
-        i(2),
-        t(");"),
-      }),
+  -- ==========================================
+  -- SNIPPETS PARA JAVASCRIPT
+  -- ==========================================
+  ls.add_snippets("javascript", {
+    s("exget", {
+      t("router.get('/"),
+      i(1, "path"),
+      t("', (req, res) => {"),
+      t({ "", "  " }),
+      i(0),
+      t({ "", "});" }),
+    }),
 
-      s("afn", {
-        t("("),
-        i(1, "args"),
-        t(") => {"),
-        t({ "", "  " }),
-        i(0),
-        t({ "", "}" }),
-      }),
-    })
+    s("clg", {
+      t("console.log('--- "),
+      i(1, "DEBUG"),
+      t(" ---');"),
+      t({ "", "console.log(" }),
+      i(2),
+      t(");"),
+    }),
 
-    -- ==========================================
-    -- SNIPPETS PARA SQL
-    -- ==========================================
-    ls.add_snippets("sql", {
-      s("sqsel", {
-        t("query := `SELECT "),
-        i(1, "*"),
-        t(" FROM "),
-        i(2, "table_name"),
-        t(" WHERE "),
-        i(3, "id"),
-        t(" = ?`"),
-        t({ "", "rows, err := db.Query(query, " }),
-        i(4, "id"),
-        t(")"),
-        t({ "", "if err != nil {" }),
-        t({ "", "  return err" }),
-        t({ "", "}" }),
-        i(0),
-      }),
+    s("afn", {
+      t("("),
+      i(1, "args"),
+      t(") => {"),
+      t({ "", "  " }),
+      i(0),
+      t({ "", "}" }),
+    }),
+  })
 
-      s("sqscan", {
-        t("for rows.Next() {"),
-        t({ "", "  err := rows.Scan(&" }),
-        i(1, "dest"),
-        t(")" }),
-        t({ "", "  if err != nil {" }),
-        t({ "", "    return err" }),
-        t({ "", "  }" }),
-        t({ "", "}" }),
-        i(0),
-      }),
+  -- ==========================================
+  -- SNIPPETS PARA SQL
+  -- ==========================================
+  ls.add_snippets("sql", {
+    s("sqsel", {
+      t("query := `SELECT "),
+      i(1, "*"),
+      t(" FROM "),
+      i(2, "table_name"),
+      t(" WHERE "),
+      i(3, "id"),
+      t(" = ?`"),
+      t({ "", "rows, err := db.Query(query, " }),
+      i(4, "id"),
+      t(")"),
+      t({ "", "if err != nil {" }),
+      t({ "", "  return err" }),
+      t({ "", "}" }),
+      i(0),
+    }),
 
-      s("sqins", {
-        t("query := `INSERT INTO "),
-        i(1, "table_name"),
-        t(" ("),
-        f(snake_case, { 2 }),
-        t(") VALUES (?)`"),
-        t({ "", "_, err := db.Exec(query, " }),
-        i(2, "Value"),
-        t(")"),
-        i(0),
-      }),
-
-      s("ctx", {
-        t("ctx, cancel := context.WithTimeout(context.Background(), "),
-        i(1, "5"),
-        t("*time.Second)"),
-        t({ "", "defer cancel()" }),
-        i(0),
-      }),
-    })
+    s("sqscan", {
+      t("for rows.Next() {"),
+      t({ "", "  err := rows.Scan(&" }),
+      i(1, "dest"),
+      t(")"), -- <-- Corregido aquí
+      t({ "", "  if err != nil {" }),
+      t({ "", "    return err" }),
+      t({ "", "  }" }),
+      t({ "", "}" }),
+      i(0),
+    }),
+    s("sqins", {
+      t("query := `INSERT INTO "),
+      i(1, "table_name"),
+      t(" ("),
+      i(2, "ColumnName"),
+      t(") VALUES (?)`"),
+      t({ "", "_, err := db.Exec(query, " }),
+      f(snake_case, { 2 }),
+      t(")"),
+      i(0),
+    }),
+  })
 
   -- ==========================================
   -- EXTENSIONES DE FILETYPE

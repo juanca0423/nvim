@@ -28,14 +28,14 @@ mimap("n", "<C-Left>", "<cmd>vertical resize -2<cr>", { desc = "Disminuir anchur
 mimap("n", "<C-Right>", "<cmd>vertical resize +2<cr>", { desc = "Aumentar anchura de ventana" })
 
 -- Snippets (Salto con J y K)
-vim.keymap.set({ "i", "s" }, ".k", function()
+vim.keymap.set({ "i", "s" }, "<C-k>", function()
   local ls = require("luasnip")
   if ls.expand_or_jumpable() then
     ls.expand_or_jump()
   end
 end, { desc = "Saltar al sig. campo" })
 
-vim.keymap.set({ "i", "s" }, ".j", function()
+vim.keymap.set({ "i", "s" }, "<C-j>", function()
   local ls = require("luasnip")
   if ls.jumpable(-1) then
     ls.jump(-1)
@@ -243,3 +243,7 @@ mimap("n", "<leader><tab>[", "<cmd>tabprevious<cr>", { desc = "Pestaña anterior
 
 -- Lua
 mimap({ "n", "x" }, "<localleader>r", function() Snacks.debug.run() end, { desc = "Ejecutar Lua" })
+
+vim.keymap.set("n", "<leader>cp", ":CccPick<CR>", { desc = "Paleta de colores" })
+
+vim.keymap.set("n", "<leader>ci", ":IconPickerYank<CR>", { desc = "Paleta de iconos"})

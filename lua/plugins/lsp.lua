@@ -24,6 +24,9 @@ return {
       "pyright",
       -- "lua_ls",
       "gopls",
+      "vtsls",
+      -- "black",
+      "fish_lsp",
       "ts_ls",
       "html",
       "cssls",
@@ -39,6 +42,11 @@ return {
     local lspconfig = require("lspconfig")
     -- ✅ CORRECCIÓN: blink.cmp no tiene default_capabilities()
     local capabilities = vim.lsp.protocol.make_client_capabilities()
+
+    local has_blink, blink = pcall(require, "blink.cmp")
+    if has_blink then
+      capabilities = blink.get_lsp_capabilities(capabilities)
+    end
 
     for _, server in ipairs(servers) do
       local opts = { capabilities = capabilities }
@@ -66,27 +74,5 @@ return {
 
       lspconfig[server].setup(opts)
     end
-
-    -- ============================================
-    -- FORMATO AUTOMÁTICO
-    -- ============================================
-    vim.api.nvim_create_autocmd("BufWritePre", {
-      pattern = "*",
-      callback = function()
-        local bufnr = vim.api.nvim_get_current_buf()
-        local ft = vim.bo[bufnr].filetype
-
-        if ft == "go" or ft == "javascript" or ft == "typescript" or ft == "typescriptreact" then
-          ---@diagnostic disable-next-line: deprecated
-          local params = vim.lsp.util.make_range_params(bufnr, "utf-8")
-          ---@diagnostic disable-next-line: inject-field
-          params.context = { only = { "source.organizeImports" } }
-          vim.lsp.buf_request_sync(bufnr, "textDocument/codeAction", params, 1000)
-        end
-
-        ---@diagnostic disable-next-line: missing-parameter, param-type-mismatch
-        vim.lsp.buf.format({ bufnr = bufnr, timeout_ms = 2000 })
-      end,
-    })
   end,
 }
